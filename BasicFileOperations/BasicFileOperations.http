@@ -1,0 +1,46 @@
+@BasicFileOperations_HostAddress = https://localhost:7107
+
+GET {{BasicFileOperations_HostAddress}}/weatherforecast/
+Accept: application/json
+
+
+GET {{BasicFileOperations_HostAddress}}/api/files
+
+###
+
+POST {{BasicFileOperations_HostAddress}}/api/files
+Content-Type: application/json
+
+{
+  //IFormFile
+}
+
+###
+
+@fileName=CV.pdf
+@userId=1
+POST {{BasicFileOperations_HostAddress}}/api/files/presigned-upload?userId={{userId}}&fileName={{fileName}}
+
+###
+
+
+GET {{BasicFileOperations_HostAddress}}/api/files/user/{{userId}}
+
+###
+
+@key=users/1/files/ProfilePhoto.png
+GET {{BasicFileOperations_HostAddress}}/api/files/download?key={{key}}
+
+###
+
+POST {{BasicFileOperations_HostAddress}}/api/files/{{userId}}
+
+###
+
+GET {{BasicFileOperations_HostAddress}}/api/files/users/{{userId}}/files
+
+###
+
+GET {{BasicFileOperations_HostAddress}}/api/files?userId={{userId}}
+
+###
