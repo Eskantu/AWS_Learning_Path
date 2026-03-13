@@ -3,6 +3,11 @@ Transform: AWS::Serverless-2016-10-31
 
 Resources:
 
+  FileStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: mario-aws-file-storage-dev
+
   FileUploadedProcessorFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -18,5 +23,6 @@ Resources:
         S3UploadEvent:
           Type: S3
           Properties:
-            Bucket: mario-aws-file-storage-dev
-            Events: s3:ObjectCreated:*
+            Bucket: !Ref FileStorageBucket
+            Events:
+              - s3:ObjectCreated:*
