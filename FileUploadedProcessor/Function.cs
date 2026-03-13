@@ -41,6 +41,7 @@ public class Function
             //Comment to test code change detection, this is not a real change
             //Comment to test code change detection, this is not a real change
             //Comment to test code change detection, this is not a real change
+            //Comment to test code change detection, this is not a real change
             var bucketName = item.S3.Bucket.Name;
             var key = Uri.UnescapeDataString(item.S3.Object.Key);
             context.Logger.LogInformation($"File uploaded -> Bucket: {item.S3.Bucket.Name}, Key: {item.S3.Object.Key}");
