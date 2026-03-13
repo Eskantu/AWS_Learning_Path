@@ -38,4 +38,4 @@ jobs:
         run: sam build --template-file infra/template.yaml
 
       - name: Deploy SAM
-        run: sam deploy --stack-name file-upload-stack --resolve-s3 --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM
+        run: sam deploy --stack-name file-upload-stack --s3-bucket aws-learning-artifacts --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM
