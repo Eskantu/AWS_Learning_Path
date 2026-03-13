@@ -13,3 +13,10 @@ Resources:
       MemorySize: 512
       Timeout: 30
       Role: arn:aws:iam::339245257062:role/lambda-file-processor-role
+
+      Events:
+        S3UploadEvent:
+          Type: S3
+          Properties:
+            Bucket: mario-aws-file-storage-dev
+            Events: s3:ObjectCreated:*
