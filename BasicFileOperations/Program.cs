@@ -8,12 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
-var config = sp.GetRequiredService<IConfiguration>();
     var awsConfig = new AmazonS3Config
     {
         RegionEndpoint = Amazon.RegionEndpoint.USEast2
     };
-    return new AmazonS3Client(config["AWS:AccessKey"], config["AWS:SecretKey"], awsConfig);
+    return new AmazonS3Client(awsConfig);
 });
 
 builder.Services.ConfigureDynamoService();

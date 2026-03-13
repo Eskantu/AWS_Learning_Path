@@ -18,11 +18,7 @@ namespace DynamoDBOperations
         {
             services.AddSingleton<IAmazonDynamoDB>(sp =>
             {
-                var config = sp.GetRequiredService<IConfiguration>();
-                var awsConfig = config.GetSection("AWS");
                 return new AmazonDynamoDBClient(
-                    awsConfig["AccessKey"],
-                    awsConfig["SecretKey"],
                     new AmazonDynamoDBConfig
                     {
                         RegionEndpoint = Amazon.RegionEndpoint.USEast2
