@@ -3,11 +3,6 @@ Transform: AWS::Serverless-2016-10-31
 
 Resources:
 
-  FileStorageBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: mario-aws-file-storage-dev
-
   FileUploadedProcessorFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -18,11 +13,3 @@ Resources:
       MemorySize: 512
       Timeout: 30
       Role: arn:aws:iam::339245257062:role/lambda-file-processor-role
-
-      Events:
-        S3UploadEvent:
-          Type: S3
-          Properties:
-            Bucket: !Ref FileStorageBucket
-            Events:
-              - s3:ObjectCreated:*
