@@ -26,6 +26,22 @@ public class Function
     /// <returns></returns>
     public async Task FunctionHandler(S3Event events, ILambdaContext context)
     {
-       
+        foreach (var item in events.Records)
+        {
+            var bucketName = item.S3.Bucket.Name;
+            var key = Uri.UnescapeDataString(item.S3.Object.Key);
+            context.Logger.LogInformation($"File uploaded -> Bucket: {item.S3.Bucket.Name}, Key: {item.S3.Object.Key}");
+
+            var metadata = new FileMetadata
+            {
+                FileName = Path.GetFileName(key),
+                S3Key = key,
+                FileSize = item.S3.Object.Size,
+                ContentType = "unknown",// S3 event does not provide content type, you may want to fetch it using S3 API if needed, this is temp value for testing
+                CreateAt = DateTime.UtcNow.ToString("o") // ISO 8601 format
+            };
+
+            await _metadataService.SaveMetadataAsync(metadata);
+        }
     }
 }
