@@ -1,0 +1,21 @@
+{
+  "Records": [
+    {
+      "eventVersion": "2.1",
+      "eventSource": "aws:s3",
+      "awsRegion": "us-east-1",
+      "eventTime": "2026-03-12T20:00:00.000Z",
+      "eventName": "ObjectCreated:Put",
+      "s3": {
+        "bucket": {
+          "name": "file-storage-bucket"
+        },
+        "object": {
+          "key": "uploads/test-file.pdf",
+          "size": 2048,
+          "eTag": "123456789"
+        }
+      }
+    }
+  ]
+}
