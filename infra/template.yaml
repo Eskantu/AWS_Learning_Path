@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+
+  FileUploadedProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: FileUploadedProcessor
+      Runtime: dotnet10
+      Handler: FileUploadedProcessor::FileUploadedProcessor.Function::FunctionHandler
+      CodeUri: ../FileUploadedProcessor
+      MemorySize: 512
+      Timeout: 30
+
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: FileMetadata
