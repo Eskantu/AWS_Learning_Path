@@ -5,4 +5,7 @@
   <Folder Name="/S3/">
     <Project Path="BasicFileOperations/BasicFileOperations.csproj" />
   </Folder>
+  <Folder Name="/Serveless/">
+    <Project Path="FileUploadedProcessor/FileUploadedProcessor.csproj" />
+  </Folder>
 </Solution>
