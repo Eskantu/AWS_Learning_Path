@@ -12,7 +12,4 @@ Resources:
       CodeUri: ../FileUploadedProcessor
       MemorySize: 512
       Timeout: 30
-
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: FileMetadata
+      Role: arn:aws:iam::339245257062:role/lambda-file-processor-role
