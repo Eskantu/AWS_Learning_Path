@@ -15,7 +15,10 @@ namespace FileUploadedProcessor.Services
 
         public MetadataService()
         {
-            var client = new AmazonDynamoDBClient();
+            var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig
+            {
+                RegionEndpoint = Amazon.RegionEndpoint.USEast2
+            });
             _context = new DynamoDBContext(client);
         }
 
