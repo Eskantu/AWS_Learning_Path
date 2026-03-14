@@ -33,8 +33,14 @@ public class Function
             var key = Uri.UnescapeDataString(item.S3.Object.Key);
             context.Logger.LogInformation($"File uploaded -> Bucket: {item.S3.Bucket.Name}, Key: {item.S3.Object.Key}");
 
+
+            var parts = key.Split('/');
+            var userId = parts.Length > 1 ? parts[1] : "unknown";
+
             var metadata = new FileMetadata
             {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
                 FileName = Path.GetFileName(key),
                 S3Key = key,
                 FileSize = item.S3.Object.Size,
