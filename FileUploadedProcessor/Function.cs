@@ -28,21 +28,7 @@ public class Function
     {
         foreach (var item in events.Records)
         {
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
-            //Comment to test code change detection, this is not a real change
+
             var bucketName = item.S3.Bucket.Name;
             var key = Uri.UnescapeDataString(item.S3.Object.Key);
             context.Logger.LogInformation($"File uploaded -> Bucket: {item.S3.Bucket.Name}, Key: {item.S3.Object.Key}");
@@ -57,6 +43,7 @@ public class Function
             };
 
             await _metadataService.SaveMetadataAsync(metadata);
+            context.Logger.LogInformation($"File metadata save on Dynamo ${key}");
         }
     }
 }
