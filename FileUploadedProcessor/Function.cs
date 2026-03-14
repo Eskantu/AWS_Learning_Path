@@ -44,7 +44,7 @@ public class Function
                 FileName = Path.GetFileName(key),
                 S3Key = key,
                 FileSize = item.S3.Object.Size,
-                ContentType = Path.GetExtension(key) ?? "unknown",// S3 event does not provide content type, you may want to fetch it using S3 API if needed, this is temp value for testing
+                ContentType = "application/octet-stream",// S3 event does not provide content type, you may want to fetch it using S3 API if needed, this is temp value for testing
                 CreateAt = DateTime.UtcNow.ToString("o") // ISO 8601 format
             };
 
