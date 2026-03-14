@@ -10,7 +10,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
     var awsConfig = new AmazonS3Config
     {
-        RegionEndpoint = Amazon.RegionEndpoint.USEast2
+        RegionEndpoint = Amazon.RegionEndpoint.USEast1
     };
     return new AmazonS3Client(awsConfig);
 });
