@@ -2,6 +2,8 @@
   <Folder Name="/DynamoDB/">
     <Project Path="DynamoDBOperations/DynamoDBOperations.csproj" />
   </Folder>
+  <Folder Name="/EventDriven/" />
+  <Folder Name="/EventDriven/src/" />
   <Folder Name="/S3/">
     <Project Path="BasicFileOperations/BasicFileOperations.csproj" />
   </Folder>
