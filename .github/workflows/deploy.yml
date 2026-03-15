@@ -10,7 +10,7 @@ jobs:
 
   deploy:
 
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'lambda'
 
     runs-on: ubuntu-latest
 
