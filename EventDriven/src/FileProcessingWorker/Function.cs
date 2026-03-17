@@ -19,6 +19,7 @@ public class Function
     public Function()
     {
         //Fake comment to create PR
+        //Fake comment to create PR
 
 
         var serviceProvider = DependencyInjection.BuildServiceProvider();
