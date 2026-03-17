@@ -11,22 +11,22 @@ namespace FileProcessingWorker.Models
 
     public class S3Record
     {
-        public S3Entity S3 { get; set; }
+        public S3Entity s3 { get; set; }
     }
 
     public class S3Entity
     {
-        public S3Bucket Bucket { get; set; }
-        public S3Object Object { get; set; }
+        public S3Bucket bucket { get; set; }
+        public S3Object @object { get; set; }
     }
 
     public class S3Bucket
     {
-        public string Name { get; set; }
+        public string name { get; set; }
     }
 
     public class S3Object
     {
-        public string Key { get; set; }
+        public string key { get; set; }
     }
 }
