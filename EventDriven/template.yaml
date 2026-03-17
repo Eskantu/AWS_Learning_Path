@@ -142,8 +142,8 @@ Resources:
 # ================= S3 BUCKET =================
   FileUploadBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    #DeletionPolicy: Retain
+    #UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Sub file-upload-serverless-${AWS::AccountId}-bucket
 
@@ -161,8 +161,8 @@ Resources:
 # ================= DYNAMODB =================
   FileMetadataTable:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    # DeletionPolicy: Retain
+    # UpdateReplacePolicy: Retain
     Properties:
       TableName: file-metadata-serverless
       BillingMode: PAY_PER_REQUEST
