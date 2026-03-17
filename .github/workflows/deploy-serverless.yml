@@ -39,6 +39,7 @@ jobs:
         run: sam build
 
       - name: SAM Deploy
+        working-directory: EventDriven
         run: |
           sam deploy \
             --stack-name file-processing-pipeline \
