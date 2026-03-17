@@ -18,6 +18,9 @@ public class Function
 
     public Function()
     {
+        //Fake comment to create PR
+
+
         var serviceProvider = DependencyInjection.BuildServiceProvider();
         _fileService = serviceProvider.GetService<FileProcessingService>()!;
     }
