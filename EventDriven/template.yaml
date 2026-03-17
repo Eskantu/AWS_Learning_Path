@@ -318,7 +318,7 @@ Resources:
   FileProcessingLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${FileProcessingWorker}
+      LogGroupName: /aws/lambda/file-processing-worker
       RetentionInDays: 14
 
 Outputs:
