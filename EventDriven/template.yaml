@@ -172,16 +172,6 @@ Resources:
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
 
-      # Configuración del evento que enviará mensajes a SQS
-      NotificationConfiguration:
-        QueueConfigurations:
-
-          # Evento disparado cuando se sube un archivo
-          - Event: s3:ObjectCreated:Put
-
-            # Cola SQS destino
-            Queue: !GetAtt FileProcessingQueue.Arn
-
 
 
 # =========================================================
@@ -320,6 +310,16 @@ Resources:
     Properties:
       LogGroupName: /aws/lambda/file-processing-worker
       RetentionInDays: 14
+
+  BucketNotification:
+  Type: AWS::S3::BucketNotification
+  DependsOn: FileProcessingQueuePolicy
+  Properties:
+    Bucket: !Ref FileUploadBucket
+    NotificationConfiguration:
+      QueueConfigurations:
+        - Event: s3:ObjectCreated:Put
+          Queue: !GetAtt FileProcessingQueue.Arn
 
 Outputs:
 
