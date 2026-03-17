@@ -1,0 +1,359 @@
+# =========================================================
+# AWS SAM TEMPLATE
+# Event Driven File Processing Pipeline
+#
+# Arquitectura:
+#
+# User Upload
+#      |
+#      v
+#     S3
+#      |
+#      v
+#     SQS
+#      |
+#      v
+#  Lambda Worker (.NET)
+#      |
+#      v
+#  DynamoDB
+#
+# Incluye:
+# - DLQ para resiliencia
+# - IAM Least Privilege
+# - Bucket seguro (no público)
+# - Infrastructure as Code
+# =========================================================
+
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+# Habilita AWS SAM para simplificar la definición de Lambdas
+Transform: AWS::Serverless-2016-10-31
+
+Description: Event Driven File Processing Pipeline
+
+
+# =========================================================
+# GLOBAL CONFIGURATION FOR ALL LAMBDA FUNCTIONS
+# =========================================================
+# Estas configuraciones se aplican a todas las funciones
+# definidas en este template.
+# =========================================================
+Globals:
+  Function:
+    Timeout: 30        # Tiempo máximo de ejecución de la Lambda
+    MemorySize: 512    # Memoria asignada a la función
+    Runtime: dotnet10  # Runtime utilizado por las Lambdas
+
+
+Resources:
+
+
+# =========================================================
+# IAM ROLE PARA LA LAMBDA WORKER
+# =========================================================
+# Este rol define qué recursos puede utilizar la Lambda.
+# Se aplica el principio de "Least Privilege".
+# =========================================================
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub file-processing-worker-role-${AWS::StackName}-${AWS::Region}
+
+      # Permite que AWS Lambda asuma este rol
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+
+      Policies:
+
+      # -----------------------------------------------------
+      # Permisos para consumir mensajes desde SQS
+      # -----------------------------------------------------
+      - PolicyName: LambdaSQSAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:ReceiveMessage
+                - sqs:DeleteMessage
+                - sqs:GetQueueAttributes
+                - sqs:GetQueueUrl
+                - sqs:ChangeMessageVisibility
+              Resource: !GetAtt FileProcessingQueue.Arn
+
+
+      # -----------------------------------------------------
+      # Permisos para guardar metadata en DynamoDB
+      # -----------------------------------------------------
+      - PolicyName: LambdaDynamoDBAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:GetItem
+                - dynamodb:DescribeTable
+              Resource: !GetAtt FileMetadataTable.Arn
+
+
+      # -----------------------------------------------------
+      # Permisos para leer archivos desde el bucket S3
+      # -----------------------------------------------------
+      - PolicyName: LambdaS3ReadAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+
+            # Leer archivos específicos del bucket
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:GetObjectAttributes
+              Resource: !Sub ${FileUploadBucket.Arn}/*
+
+            # Permite listar el bucket
+            - Effect: Allow
+              Action:
+                - s3:ListBucket
+              Resource: !GetAtt FileUploadBucket.Arn
+
+
+      # -----------------------------------------------------
+      # Permisos para escribir logs en CloudWatch
+      # -----------------------------------------------------
+      - PolicyName: LambdaCloudWatchLogs
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: "*"
+
+
+
+# =========================================================
+# S3 BUCKET
+# =========================================================
+# Bucket donde los usuarios subirán archivos.
+# Cada upload genera un evento que se envía a SQS.
+# =========================================================
+  FileUploadBucket:
+    Type: AWS::S3::Bucket
+
+    # Evita borrar el bucket al eliminar el stack
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
+    # Necesario para asegurar que la QueuePolicy ya exista
+    # antes de configurar las notificaciones del bucket
+    DependsOn: FileProcessingQueuePolicy
+
+    Properties:
+
+      # Nombre único del bucket usando el AccountId
+      BucketName: !Sub file-upload-serverless-${AWS::AccountId}-bucket
+      
+      # Bloquea cualquier intento de hacer el bucket público
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+
+      # Configuración del evento que enviará mensajes a SQS
+      NotificationConfiguration:
+        QueueConfigurations:
+
+          # Evento disparado cuando se sube un archivo
+          - Event: s3:ObjectCreated:Put
+
+            # Cola SQS destino
+            Queue: !GetAtt FileProcessingQueue.Arn
+
+
+
+# =========================================================
+# DEAD LETTER QUEUE
+# =========================================================
+# Cola donde se envían los mensajes que fallaron
+# después de varios intentos de procesamiento.
+# =========================================================
+  FileProcessingDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: file-processing-dlq
+
+
+
+# =========================================================
+# COLA PRINCIPAL DE PROCESAMIENTO
+# =========================================================
+# Recibe eventos desde S3 y los envía a Lambda.
+# =========================================================
+  FileProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: file-processing-queue
+
+      # Tiempo que Lambda tiene para procesar el mensaje
+      VisibilityTimeout: 180
+
+      # Configuración de retry y Dead Letter Queue
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt FileProcessingDLQ.Arn
+        maxReceiveCount: 3
+
+
+
+# =========================================================
+# PERMITE QUE S3 ENVÍE MENSAJES A SQS
+# =========================================================
+# Resource policy requerida para que el bucket pueda
+# enviar eventos a la cola.
+# =========================================================
+  FileProcessingQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref FileProcessingQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt FileProcessingQueue.Arn
+            Condition:
+
+              # Solo este bucket puede enviar mensajes
+              ArnEquals:
+                aws:SourceArn: !GetAtt FileUploadBucket.Arn
+
+
+
+# =========================================================
+# DYNAMODB TABLE
+# =========================================================
+# Tabla donde se guardará la metadata de los archivos.
+# =========================================================
+  FileMetadataTable:
+    Type: AWS::DynamoDB::Table
+
+    # Evita perder datos al eliminar el stack
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
+    Properties:
+      TableName: file-metadata-serverless
+
+      # DynamoDB serverless
+      BillingMode: PAY_PER_REQUEST
+
+      AttributeDefinitions:
+      - AttributeName: Id
+        AttributeType: S
+
+      KeySchema:
+      - AttributeName: Id
+        KeyType: HASH
+
+
+
+# =========================================================
+# LAMBDA WORKER
+# =========================================================
+# Esta función consume mensajes desde SQS y procesa
+# los archivos subidos al bucket.
+# =========================================================
+  FileProcessingWorker:
+    Type: AWS::Serverless::Function
+    Properties:
+
+      FunctionName: file-processing-worker
+      # Numero máximo de ejecuciones concurrentes para evitar sobrecarga
+      ReservedConcurrentExecutions: 10
+
+      # Ubicación del código fuente
+      CodeUri: src/FileProcessingWorker
+
+      # Handler de la función
+      Handler: FileProcessingWorker::FileProcessingWorker.Function::FunctionHandler
+
+      # IAM Role que utilizará la Lambda
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+      Description: Processes file upload events from SQS and stores metadata in DynamoDB
+
+      # Configuración del trigger desde SQS
+      Events:
+        FileProcessingQueueEvent:
+          Type: SQS
+          Properties:
+
+            # Cola que dispara la Lambda
+            Queue: !GetAtt FileProcessingQueue.Arn
+
+            # Número de mensajes procesados por ejecución
+            BatchSize: 5
+
+  # =========================================================
+  # CLOUDWATCH LOG GROUP
+  # =========================================================
+  # Controla la retención de logs para la Lambda.
+  # Si no se define, AWS guarda logs indefinidamente.
+  # =========================================================
+  FileProcessingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FileProcessingWorker}
+      RetentionInDays: 14
+
+Outputs:
+
+  # =========================================================
+  # S3 BUCKET NAME
+  # =========================================================
+  FileUploadBucketName:
+    Description: Name of the S3 bucket used for file uploads
+    Value: !Ref FileUploadBucket
+
+  # =========================================================
+  # SQS QUEUE URL
+  # =========================================================
+  FileProcessingQueueUrl:
+    Description: URL of the SQS queue that receives S3 events
+    Value: !Ref FileProcessingQueue
+
+  # =========================================================
+  # SQS DEAD LETTER QUEUE URL
+  # =========================================================
+  FileProcessingDLQUrl:
+    Description: URL of the Dead Letter Queue for failed messages
+    Value: !Ref FileProcessingDLQ
+
+  # =========================================================
+  # LAMBDA WORKER ARN
+  # =========================================================
+  FileProcessingWorkerArn:
+    Description: ARN of the Lambda worker that processes files
+    Value: !GetAtt FileProcessingWorker.Arn
+
+  # =========================================================
+  # DYNAMODB TABLE NAME
+  # =========================================================
+  FileMetadataTableName:
+    Description: DynamoDB table used to store file metadata
+    Value: !Ref FileMetadataTable

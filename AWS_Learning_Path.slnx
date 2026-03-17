@@ -2,12 +2,16 @@
   <Folder Name="/DynamoDB/">
     <Project Path="DynamoDBOperations/DynamoDBOperations.csproj" />
   </Folder>
-  <Folder Name="/EventDriven/" />
-  <Folder Name="/EventDriven/src/" />
   <Folder Name="/S3/">
     <Project Path="BasicFileOperations/BasicFileOperations.csproj" />
   </Folder>
   <Folder Name="/Serveless/">
     <Project Path="FileUploadedProcessor/FileUploadedProcessor.csproj" />
+  </Folder>
+<Folder Name="/EventDriven/src/">
+  <Project Path="EventDriven/src/FileProcessingWorker/FileProcessingWorker.csproj" />
+</Folder>
+  <Folder Name="/EventDriven/">
+    <File Path="EventDriven/template.yaml" />
   </Folder>
 </Solution>
