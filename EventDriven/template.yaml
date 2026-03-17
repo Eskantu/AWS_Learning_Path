@@ -172,6 +172,16 @@ Resources:
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
 
+      BucketNotification:
+        Type: AWS::S3::BucketNotification
+        DependsOn: FileProcessingQueuePolicy
+        Properties:
+          Bucket: !Ref FileUploadBucket
+          NotificationConfiguration:
+            QueueConfigurations:
+              - Event: s3:ObjectCreated:Put
+                Queue: !GetAtt FileProcessingQueue.Arn
+
 
 
 # =========================================================
@@ -310,16 +320,6 @@ Resources:
     Properties:
       LogGroupName: /aws/lambda/file-processing-worker
       RetentionInDays: 14
-
-  BucketNotification:
-  Type: AWS::S3::BucketNotification
-  DependsOn: FileProcessingQueuePolicy
-  Properties:
-    Bucket: !Ref FileUploadBucket
-    NotificationConfiguration:
-      QueueConfigurations:
-        - Event: s3:ObjectCreated:Put
-          Queue: !GetAtt FileProcessingQueue.Arn
 
 Outputs:
 
