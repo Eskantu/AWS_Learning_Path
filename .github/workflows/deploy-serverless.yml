@@ -44,7 +44,7 @@ jobs:
           sam deploy \
             --stack-name file-processing-pipeline \
             --s3-bucket aws-learning-artifacts \
-            --capabilities CAPABILITY_IAM \
+            --capabilities CAPABILITY_NAMED_IAM \
             --region us-east-1 \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset
