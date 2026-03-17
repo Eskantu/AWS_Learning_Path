@@ -116,15 +116,20 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-
+  
     Properties:
       BucketName: !Sub file-upload-serverless-${AWS::AccountId}-bucket
-
+  
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
+  
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:Put
+            Queue: !GetAtt FileProcessingQueue.Arn
 
 
 # =========================================================
@@ -170,20 +175,6 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !GetAtt FileUploadBucket.Arn
-
-
-# =========================================================
-# S3 → SQS NOTIFICATION
-# =========================================================
-  FileUploadBucketNotification:
-    Type: AWS::S3::BucketNotification
-    DependsOn: FileProcessingQueuePolicy
-    Properties:
-      Bucket: !Ref FileUploadBucket
-      NotificationConfiguration:
-        QueueConfigurations:
-          - Event: s3:ObjectCreated:Put
-            Queue: !GetAtt FileProcessingQueue.Arn
 
 
 # =========================================================
