@@ -52,8 +52,8 @@ public class Function
                     continue;
                 }
 
-                string bucket = record.S3.Bucket.Name;
-                string key = record.S3.Object.Key;
+                string bucket = record.s3.bucket.name;
+                string key = record.s3.@object.key;
 
                 await _fileService.ProcessFile(bucket, key);
             }

@@ -18,6 +18,7 @@ public class FileProcessingService
 
     public async Task ProcessFile(string bucket, string key)
     {
+
         using GetObjectResponse response = await _s3Client.GetObjectAsync(bucket, key);
 
         await SaveMetadata(bucket, key, response.ContentLength);
@@ -45,9 +46,16 @@ public class FileProcessingService
         {
             await _dynamoDb.PutItemAsync(request);
         }
-        catch (ConditionalCheckFailedException)
+        catch (ConditionalCheckFailedException ex)
         {
-            // duplicate event ignored
+         
+            // Handle the case where the item already exists
+            Console.WriteLine($"Item with Id {objectKey} already exists: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Console.WriteLine($"Error saving metadata for {objectKey}: {ex.Message}");
 
         }
     }
