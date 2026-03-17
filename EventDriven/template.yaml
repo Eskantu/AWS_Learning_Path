@@ -115,6 +115,7 @@ Resources:
   FileUploadBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
+    DependsOn: FileProcessingQueuePolicy
     UpdateReplacePolicy: Retain
   
     Properties:
@@ -174,7 +175,7 @@ Resources:
             Resource: !GetAtt FileProcessingQueue.Arn
             Condition:
               ArnEquals:
-                aws:SourceArn: !GetAtt FileUploadBucket.Arn
+                aws:SourceAccount: !Ref AWS::AccountId
 
 
 # =========================================================
