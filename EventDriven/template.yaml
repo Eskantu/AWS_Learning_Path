@@ -180,7 +180,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: file-processing-worker
-      ReservedConcurrentExecutions: 10
+      ReservedConcurrentExecutions: 2
 
       CodeUri: src/FileProcessingWorker
       Handler: FileProcessingWorker::FileProcessingWorker.Function::FunctionHandler
