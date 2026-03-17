@@ -22,7 +22,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0
+          dotnet-version: 10.x
 
       - name: Install AWS SAM
         uses: aws-actions/setup-sam@v2
@@ -35,7 +35,16 @@ jobs:
           aws-region: us-east-1
 
       - name: SAM Build
+        working-directory: EventDriven
         run: sam build
 
       - name: SAM Deploy
-        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+        run: |
+          sam deploy \
+            --stack-name file-processing-pipeline \
+            --s3-bucket aws-learning-artifacts \
+            --capabilities CAPABILITY_IAM \
+            --region us-east-1 \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --resolve-s3 false
